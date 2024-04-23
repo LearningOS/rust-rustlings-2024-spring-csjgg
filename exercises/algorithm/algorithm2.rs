@@ -1,12 +1,5 @@
-/*
-	double linked list reverse
-	This problem requires you to reverse a doubly linked list
-*/
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -24,6 +17,7 @@ impl<T> Node<T> {
         }
     }
 }
+
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
@@ -58,7 +52,6 @@ impl<T> LinkedList<T> {
         self.end = node_ptr;
         self.length += 1;
     }
-
     pub fn get(&mut self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
@@ -72,9 +65,24 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn reverse(&mut self){
-		// TODO
-	}
+
+    pub fn reverse(&mut self) {
+        let mut current = self.start;
+        while let Some(mut node) = current {
+            unsafe {
+                // Swap the next and prev pointers
+                let temp = (*node.as_ptr()).next;
+                (*node.as_ptr()).next = (*node.as_ptr()).prev;
+                (*node.as_ptr()).prev = temp;
+
+                // Move to the next node in the original list, which is prev in the current context
+                current = temp;
+            }
+        }
+
+        // Swap the start and end pointers of the list
+        std::mem::swap(&mut self.start, &mut self.end);
+    }
 }
 
 impl<T> Display for LinkedList<T>
@@ -82,25 +90,16 @@ where
     T: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self.start {
-            Some(node) => write!(f, "{}", unsafe { node.as_ref() }),
-            None => Ok(()),
+        let mut current = self.start;
+        while let Some(node) = current {
+            unsafe {
+                write!(f, "{} ", (*node.as_ptr()).val)?;
+                current = (*node.as_ptr()).next;
+            }
         }
+        Ok(())
     }
 }
-
-impl<T> Display for Node<T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self.next {
-            Some(node) => write!(f, "{}, {}", self.val, unsafe { node.as_ref() }),
-            None => write!(f, "{}", self.val),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::LinkedList;

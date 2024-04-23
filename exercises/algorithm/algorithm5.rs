@@ -1,40 +1,45 @@
-/*
-	bfs
-	This problem requires you to implement a basic BFS algorithm
-*/
-
-//I AM NOT DONE
 use std::collections::VecDeque;
 
-// Define a graph
 struct Graph {
-    adj: Vec<Vec<usize>>, 
+    adj: Vec<Vec<usize>>, // adjacency list representation of the graph
 }
 
 impl Graph {
-    // Create a new graph with n vertices
     fn new(n: usize) -> Self {
         Graph {
-            adj: vec![vec![]; n],
+            adj: vec![vec![]; n], // initialize each vertex with an empty list of neighbors
         }
     }
 
-    // Add an edge to the graph
     fn add_edge(&mut self, src: usize, dest: usize) {
-        self.adj[src].push(dest); 
-        self.adj[dest].push(src); 
+        self.adj[src].push(dest); // add dest to the list of src's neighbors
+        self.adj[dest].push(src); // add src to the list of dest's neighbors, because it's an undirected graph
     }
 
-    // Perform a breadth-first search on the graph, return the order of visited nodes
     fn bfs_with_return(&self, start: usize) -> Vec<usize> {
-        
-		//TODO
-
         let mut visit_order = vec![];
+        let mut visited = vec![false; self.adj.len()]; // track visited vertices
+        let mut queue = VecDeque::new();
+
+        // Start BFS from the starting vertex
+        visited[start] = true;
+        queue.push_back(start);
+
+        while let Some(vertex) = queue.pop_front() {
+            visit_order.push(vertex); // record the visit order
+
+            // Visit all the unvisited neighbors
+            for &neighbor in &self.adj[vertex] {
+                if !visited[neighbor] {
+                    visited[neighbor] = true; // mark as visited
+                    queue.push_back(neighbor); // enqueue for processing
+                }
+            }
+        }
+
         visit_order
     }
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,12 +1,5 @@
-/*
-	single linked list merge
-	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
-*/
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -22,6 +15,7 @@ impl<T> Node<T> {
         }
     }
 }
+
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
@@ -55,7 +49,6 @@ impl<T> LinkedList<T> {
         self.end = node_ptr;
         self.length += 1;
     }
-
     pub fn get(&mut self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
@@ -69,15 +62,38 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
+    where
+        T: Ord+Copy,
+    {
+        let mut merged_list = LinkedList::new();
+        while list_a.start.is_some() && list_b.start.is_some() {
+            let node_a = list_a.start.unwrap();
+            let node_b = list_b.start.unwrap();
+            unsafe {
+                if (*node_a.as_ptr()).val <= (*node_b.as_ptr()).val {
+                    list_a.start = (*node_a.as_ptr()).next;
+                    merged_list.add((*node_a.as_ptr()).val);
+                } else {
+                    list_b.start = (*node_b.as_ptr()).next;
+                    merged_list.add((*node_b.as_ptr()).val);
+                }
+            }
         }
-	}
+
+        // Append remaining nodes from either list
+        let remaining_list = if list_a.start.is_some() { list_a } else { list_b };
+        let mut current = remaining_list.start;
+        while let Some(node) = current {
+            unsafe {
+                merged_list.add((*node.as_ptr()).val);
+                current = (*node.as_ptr()).next;
+            }
+        }
+
+        merged_list
+    }
 }
 
 impl<T> Display for LinkedList<T>
@@ -85,25 +101,16 @@ where
     T: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self.start {
-            Some(node) => write!(f, "{}", unsafe { node.as_ref() }),
-            None => Ok(()),
+        let mut current = self.start;
+        while let Some(node) = current {
+            unsafe {
+                write!(f, "{} ", (*node.as_ptr()).val)?;
+                current = (*node.as_ptr()).next;
+            }
         }
+        Ok(())
     }
 }
-
-impl<T> Display for Node<T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self.next {
-            Some(node) => write!(f, "{}, {}", self.val, unsafe { node.as_ref() }),
-            None => write!(f, "{}", self.val),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::LinkedList;

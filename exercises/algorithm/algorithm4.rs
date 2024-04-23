@@ -1,12 +1,5 @@
-/*
-	binary_search tree
-	This problem requires you to implement a basic interface for a binary tree
-*/
-
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
-
 
 #[derive(Debug)]
 struct TreeNode<T>
@@ -16,14 +9,6 @@ where
     value: T,
     left: Option<Box<TreeNode<T>>>,
     right: Option<Box<TreeNode<T>>>,
-}
-
-#[derive(Debug)]
-struct BinarySearchTree<T>
-where
-    T: Ord,
-{
-    root: Option<Box<TreeNode<T>>>,
 }
 
 impl<T> TreeNode<T>
@@ -37,40 +22,71 @@ where
             right: None,
         }
     }
+
+    // Recursive insertion into the tree node
+    fn insert(&mut self, value: T) {
+        match value.cmp(&self.value) {
+            Ordering::Less => {
+                if let Some(left) = self.left.as_mut() {
+                    left.insert(value);
+                } else {
+                    self.left = Some(Box::new(TreeNode::new(value)));
+                }
+            },
+            Ordering::Greater => {
+                if let Some(right) = self.right.as_mut() {
+                    right.insert(value);
+                } else {
+                    self.right = Some(Box::new(TreeNode::new(value)));
+                }
+            },
+            Ordering::Equal => {
+                // Values are equal; handle this case depending on whether
+                // duplicates are allowed (do nothing here to ignore duplicates)
+            },
+        }
+    }
+
+    // Recursive search in the tree node
+    fn search(&self, value: T) -> bool {
+        match value.cmp(&self.value) {
+            Ordering::Less => self.left.as_ref().map_or(false, |left| left.search(value)),
+            Ordering::Greater => self.right.as_ref().map_or(false, |right| right.search(value)),
+            Ordering::Equal => true,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct BinarySearchTree<T>
+where
+    T: Ord,
+{
+    root: Option<Box<TreeNode<T>>>,
 }
 
 impl<T> BinarySearchTree<T>
 where
     T: Ord,
 {
-
     fn new() -> Self {
         BinarySearchTree { root: None }
     }
 
-    // Insert a value into the BST
+    // Public interface for insert
     fn insert(&mut self, value: T) {
-        //TODO
+        if let Some(root) = self.root.as_mut() {
+            root.insert(value);
+        } else {
+            self.root = Some(Box::new(TreeNode::new(value)));
+        }
     }
 
-    // Search for a value in the BST
+    // Public interface for search
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        self.root.as_ref().map_or(false, |root| root.search(value))
     }
 }
-
-impl<T> TreeNode<T>
-where
-    T: Ord,
-{
-    // Insert a node into the tree
-    fn insert(&mut self, value: T) {
-        //TODO
-    }
-}
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
